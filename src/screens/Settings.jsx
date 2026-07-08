@@ -82,20 +82,18 @@ export default function Settings() {
             <span className="text-sm text-gray-700 dark:text-gray-300">
               Dark mode
             </span>
-            <button
-              onClick={handleThemeToggle}
-              role="switch"
-              aria-checked={theme === 'dark'}
-              className={`w-11 h-6 shrink-0 rounded-full transition-colors relative ${
-                theme === 'dark' ? 'bg-blue-500' : 'bg-gray-300'
-              }`}
-            >
-              <span
-                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                  theme === 'dark' ? 'translate-x-5' : 'translate-x-0'
-                }`}
+            <label className="theme-switch">
+              <input
+                type="checkbox"
+                className="theme-switch-cb"
+                checked={theme === 'dark'}
+                onChange={handleThemeToggle}
               />
-            </button>
+              <span className="theme-switch-toggle">
+                <span className="theme-switch-left">on</span>
+                <span className="theme-switch-right">off</span>
+              </span>
+            </label>
           </div>
 
           <button
