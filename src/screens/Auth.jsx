@@ -17,12 +17,16 @@ export default function Auth() {
     setError('')
     setLoading(true)
 
-    // Supabase phone auth requires E.164 format, e.g. +15145551234
-    const formattedPhone = phone.trim()
+    // Test-mode auth: no real SMS/Twilio needed. We keep the phone number
+    // as what the user types and sees, but sign in/up under the hood using
+    // Supabase's plain email/password auth with a fake email built from
+    // the digits (e.g. 15145551234 -> 15145551234@notepad.app).
+    const digitsOnly = phone.trim().replace(/[^0-9]/g, '')
+    const fakeEmail = `${digitsOnly}@notepad.app`
 
     if (isLogin) {
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        phone: formattedPhone,
+        email: fakeEmail,
         password,
       })
       setLoading(false)
@@ -33,7 +37,7 @@ export default function Auth() {
       navigate('/notes')
     } else {
       const { error: signUpError } = await supabase.auth.signUp({
-        phone: formattedPhone,
+        email: fakeEmail,
         password,
       })
       setLoading(false)
@@ -64,7 +68,7 @@ export default function Auth() {
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
-            placeholder="Phone number (e.g. +15145551234)"
+            placeholder="Phone number"
             required
             className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
