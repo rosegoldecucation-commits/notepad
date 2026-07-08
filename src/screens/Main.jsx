@@ -3,6 +3,13 @@ import { supabase } from '../lib/supabaseClient.js'
 import Sidebar from '../components/Sidebar.jsx'
 import NoteEditor from '../components/NoteEditor.jsx'
 
+function sortNotes(list) {
+  return [...list].sort((a, b) => {
+    if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1
+    return new Date(b.updated_at) - new Date(a.updated_at)
+  })
+}
+
 export default function Main() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [notes, setNotes] = useState([])
@@ -23,7 +30,7 @@ export default function Main() {
         .eq('is_trashed', false)
         .order('updated_at', { ascending: false })
 
-      if (!error) setNotes(data)
+      if (!error) setNotes(sortNotes(data))
       setLoading(false)
     }
     load()
@@ -45,9 +52,7 @@ export default function Main() {
       const updated = exists
         ? prev.map((n) => (n.id === savedNote.id ? savedNote : n))
         : [savedNote, ...prev]
-      return updated.sort(
-        (a, b) => new Date(b.updated_at) - new Date(a.updated_at)
-      )
+      return sortNotes(updated)
     })
   }
 
@@ -120,6 +125,7 @@ export default function Main() {
               className="w-full text-left px-4 py-3 border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50"
             >
               <div className="flex items-center gap-2">
+                {note.is_pinned && <span className="text-xs">📌</span>}
                 {note.mood_emoji && <span>{note.mood_emoji}</span>}
                 <span className="font-semibold text-gray-900 dark:text-white truncate">
                   {note.title || 'Untitled'}
