@@ -10,23 +10,16 @@ export default function Settings() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      setUserId(user.id)
+    // Single source of truth: read the theme that's actually applied to
+    // the page right now (set once at app load in App.jsx), instead of
+    // fetching it again here — fetching it twice is what caused the
+    // toggle to sometimes show the wrong on/off position.
+    const isDark = document.documentElement.classList.contains('dark')
+    setTheme(isDark ? 'dark' : 'light')
 
-      const { data } = await supabase
-        .from('profiles')
-        .select('theme')
-        .eq('id', user.id)
-        .single()
-
-      if (data?.theme) {
-        setTheme(data.theme)
-        document.documentElement.classList.toggle('dark', data.theme === 'dark')
-      }
-    }
-    load()
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id)
+    })
   }, [])
 
   async function handleThemeToggle() {
@@ -91,13 +84,15 @@ export default function Settings() {
             </span>
             <button
               onClick={handleThemeToggle}
-              className={`w-11 h-6 rounded-full transition-colors relative ${
+              role="switch"
+              aria-checked={theme === 'dark'}
+              className={`w-11 h-6 shrink-0 rounded-full transition-colors relative ${
                 theme === 'dark' ? 'bg-blue-500' : 'bg-gray-300'
               }`}
             >
               <span
-                className={`absolute top-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
-                  theme === 'dark' ? 'translate-x-5' : 'translate-x-0.5'
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${
+                  theme === 'dark' ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
             </button>
