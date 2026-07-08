@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient.js'
 
@@ -8,7 +8,19 @@ export default function Auth() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [checkingSession, setCheckingSession] = useState(true)
   const navigate = useNavigate()
+
+  // If already logged in, skip straight to Main instead of showing the form again
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate('/notes', { replace: true })
+      } else {
+        setCheckingSession(false)
+      }
+    })
+  }, [navigate])
 
   const isLogin = mode === 'login'
 
@@ -48,6 +60,14 @@ export default function Auth() {
       // New accounts always see the one-time Welcome screen first
       navigate('/welcome')
     }
+  }
+
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+        <p className="text-sm text-gray-400">Loading...</p>
+      </div>
+    )
   }
 
   return (
